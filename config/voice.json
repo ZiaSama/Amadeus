@@ -5,8 +5,8 @@
   },
   "stt": {
     "model": "base",
-    "device": "cuda",
-    "compute_type": "int8_float16",
+    "device": "cpu",
+    "compute_type": "int8",
     "language": "zh",
     "cache_dir": "D:/Game/AIModels/whisper/hub"
   },
