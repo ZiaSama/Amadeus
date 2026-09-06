@@ -63,6 +63,11 @@ class CharacterController:
             s.behavior = "listening"
             s.expression = "curious"
             s.reason = "正在听用户说话"
+        elif event.kind == "VOICE_LOADING_STT":
+            s.voice_status = "loading_stt"
+            s.behavior = "thinking"
+            s.expression = "focused"
+            s.reason = "首次准备本地语音识别模型；可能需要下载并加载"
         elif event.kind == "VOICE_TRANSCRIBING":
             s.voice_status = "transcribing"
             s.behavior = "listening"
