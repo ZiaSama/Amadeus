@@ -1,7 +1,7 @@
 """Local event delivery. No character or UI decisions belong here."""
 from collections import defaultdict
-from dataclasses import dataclass
-from typing import Callable
+from dataclasses import dataclass, field
+from typing import Any, Callable
 
 
 @dataclass(frozen=True)
@@ -9,6 +9,7 @@ class Event:
     kind: str
     timestamp: float  # Monotonic seconds, never persisted as a wall-clock time.
     source: str = "ui"
+    payload: dict[str, Any] = field(default_factory=dict)
 
 
 class EventBus:
