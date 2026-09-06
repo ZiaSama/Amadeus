@@ -13,7 +13,7 @@
     "beam_size": 3,
     "vad_filter": false,
     "condition_on_previous_text": false,
-    "initial_prompt": "这是简短的中文口语对话。常见词包括：牧濑红莉栖、Amadeus、Ollama、Qwen、Whisper、MATLAB、Python、LPM、DBP。"
+    "initial_prompt": "以下是中文普通话的简短口语。请忠实转写实际听到的内容，不要补充用户没有说出的词。"
   },
   "llm": {
     "endpoint": "http://127.0.0.1:11434/api/chat",
