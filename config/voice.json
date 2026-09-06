@@ -4,10 +4,11 @@
     "sample_rate": 16000
   },
   "stt": {
-    "model": "small",
+    "model": "base",
     "device": "cuda",
     "compute_type": "int8_float16",
-    "language": "zh"
+    "language": "zh",
+    "cache_dir": "D:/Game/AIModels/whisper/hub"
   },
   "llm": {
     "endpoint": "http://127.0.0.1:11434/api/chat",
