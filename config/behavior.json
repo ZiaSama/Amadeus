@@ -1,0 +1,17 @@
+{
+  "frame_ms": 33,
+  "click_window_sec": 10,
+  "irritation_baseline": 0.05,
+  "irritation_tau_sec": 180,
+  "click_gain": 0.03,
+  "repeat_click_gain": 0.08,
+  "annoyed_threshold": 0.25,
+  "evade_threshold": 0.60,
+  "reaction_sec": 2.2,
+  "eye_tau_sec": 0.10,
+  "head_tau_sec": 0.35,
+  "cursor_radius_px": 360,
+  "blink_interval_sec": [3, 7],
+  "blink_duration_sec": 0.18,
+  "idle_gaze_interval_sec": [8, 20]
+}
