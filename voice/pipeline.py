@@ -19,9 +19,11 @@ class VoicePipeline(QObject):
     def __init__(self, config: dict):
         super().__init__()
         self.config = config
+        audio_config = config.get("audio", {})
         self.recorder = AudioRecorder(
-            sample_rate=int(config.get("audio", {}).get("sample_rate", 16000)),
+            sample_rate=int(audio_config.get("sample_rate", 16000)),
             channels=1,
+            silence_padding_ms=int(audio_config.get("silence_padding_ms", 180)),
         )
         self.stt = FasterWhisperSTT(config.get("stt", {}))
         self.llm = LocalLLM(config.get("llm", {}))
@@ -66,8 +68,6 @@ class VoicePipeline(QObject):
             self.tts.speak(reply.text)
             self.status_changed.emit("idle")
         except Exception as exc:
-            # Do not immediately overwrite the error with an idle state. Keeping
-            # the failing stage visible makes local setup problems diagnosable.
             self.error.emit(f"语音链路失败：{type(exc).__name__}: {exc}")
         finally:
             try:
