@@ -5,6 +5,8 @@ import random
 import tempfile
 import unittest
 
+from brain.history import ConversationHistory
+from brain.local_llm import LocalLLM
 from character.controller import CharacterController
 from core.events import Event, EventBus
 from storage.settings import load_settings, save_settings
@@ -54,8 +56,35 @@ class InteractionTests(unittest.TestCase):
         bus, received = EventBus(), []
         bus.subscribe("PET_CLICK", received.append)
         bus.emit(Event("PET_DRAG_START", 0))
-        bus.emit(Event("PET_CLICK", 1))
+        bus.emit(Event("PET_CLICK", 1, payload={"x": 1}))
         self.assertEqual(len(received), 1)
+        self.assertEqual(received[0].payload["x"], 1)
+
+    def test_voice_reply_updates_character_state(self):
+        model = self.make_controller()
+        model.handle(Event("VOICE_LISTENING", 1))
+        self.assertEqual(model.state.voice_status, "listening")
+        self.assertEqual(model.state.expression, "curious")
+        model.handle(Event("VOICE_REPLY", 2, payload={"text": "……嗯？", "emotion": "skeptical"}))
+        self.assertEqual(model.state.voice_status, "speaking")
+        self.assertEqual(model.state.speech_text, "……嗯？")
+        self.assertEqual(model.state.expression, "skeptical")
+
+    def test_short_history_is_bounded(self):
+        history = ConversationHistory(max_turns=2)
+        for i in range(4):
+            history.add_user(f"u{i}")
+            history.add_assistant(f"a{i}")
+        self.assertEqual(len(history.messages()), 4)
+        self.assertEqual(history.messages()[0]["content"], "u2")
+
+    def test_llm_reply_parser_accepts_json_and_plain_text(self):
+        parsed = LocalLLM._parse_reply('{"text":"好了。","emotion":"confident"}')
+        self.assertEqual(parsed.text, "好了。")
+        self.assertEqual(parsed.emotion, "confident")
+        fallback = LocalLLM._parse_reply("直接回复")
+        self.assertEqual(fallback.text, "直接回复")
+        self.assertEqual(fallback.emotion, "neutral")
 
     def test_settings_roundtrip_and_corrupt_data(self):
         with tempfile.TemporaryDirectory() as directory:
