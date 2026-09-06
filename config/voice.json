@@ -1,14 +1,19 @@
 {
   "enabled": true,
   "audio": {
-    "sample_rate": 16000
+    "sample_rate": 16000,
+    "silence_padding_ms": 180
   },
   "stt": {
-    "model": "base",
+    "model": "small",
     "device": "cpu",
     "compute_type": "int8",
     "language": "zh",
-    "cache_dir": "D:/Game/AIModels/whisper/hub"
+    "cache_dir": "D:/Game/AIModels/whisper/hub",
+    "beam_size": 3,
+    "vad_filter": false,
+    "condition_on_previous_text": false,
+    "initial_prompt": "这是简短的中文口语对话。常见词包括：牧濑红莉栖、Amadeus、Ollama、Qwen、Whisper、MATLAB、Python、LPM、DBP。"
   },
   "llm": {
     "endpoint": "http://127.0.0.1:11434/api/chat",
@@ -24,6 +29,7 @@
   "tts": {
     "rate": 185,
     "volume": 1.0,
-    "voice_contains": ""
+    "voice_contains": "",
+    "recreate_engine_each_utterance": true
   }
 }
