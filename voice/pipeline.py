@@ -37,7 +37,7 @@ class VoicePipeline(QObject):
             self.recording = True
             self.status_changed.emit("listening")
         except Exception as exc:
-            self.error.emit(str(exc))
+            self.error.emit(f"录音启动失败：{exc}")
 
     def stop_and_process(self, irritation: float, behavior: str) -> None:
         if not self.recording:
@@ -46,7 +46,7 @@ class VoicePipeline(QObject):
             wav_path = self.recorder.stop_to_wav()
         except Exception as exc:
             self.recording = False
-            self.error.emit(str(exc))
+            self.error.emit(f"录音保存失败：{exc}")
             return
         self.recording = False
         self.executor.submit(self._process, wav_path, irritation, behavior)
@@ -66,8 +66,9 @@ class VoicePipeline(QObject):
             self.tts.speak(reply.text)
             self.status_changed.emit("idle")
         except Exception as exc:
-            self.error.emit(str(exc))
-            self.status_changed.emit("idle")
+            # Do not immediately overwrite the error with an idle state. Keeping
+            # the failing stage visible makes local setup problems diagnosable.
+            self.error.emit(f"语音链路失败：{type(exc).__name__}: {exc}")
         finally:
             try:
                 wav_path.unlink(missing_ok=True)
