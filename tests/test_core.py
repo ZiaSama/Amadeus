@@ -7,6 +7,7 @@ import unittest
 
 from brain.history import ConversationHistory
 from brain.local_llm import LocalLLM
+from brain.types import CharacterReply
 from character.controller import CharacterController
 from core.events import Event, EventBus
 from storage.settings import load_settings, save_settings
@@ -85,6 +86,18 @@ class InteractionTests(unittest.TestCase):
         fallback = LocalLLM._parse_reply("直接回复")
         self.assertEqual(fallback.text, "直接回复")
         self.assertEqual(fallback.emotion, "neutral")
+
+    def test_style_guard_removes_customer_service_greeting(self):
+        reply = CharacterReply(text="你好！有什么可以帮助你的吗？", emotion="neutral")
+        guarded = LocalLLM._style_guard("你好", reply)
+        self.assertNotIn("帮助你", guarded.text)
+        self.assertEqual(guarded.text, "……你好。突然这么正式干什么？")
+        self.assertEqual(guarded.emotion, "skeptical")
+
+    def test_style_guard_preserves_normal_character_reply(self):
+        reply = CharacterReply(text="又来？先把报错给我看。", emotion="mild_annoyed")
+        guarded = LocalLLM._style_guard("代码又错了", reply)
+        self.assertEqual(guarded, reply)
 
     def test_settings_roundtrip_and_corrupt_data(self):
         with tempfile.TemporaryDirectory() as directory:
