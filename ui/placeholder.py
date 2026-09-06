@@ -14,7 +14,6 @@ def draw_character(p: QPainter, s: CharacterState, elapsed: float) -> None:
     p.drawEllipse(QRectF(52, 306, 176, 16))
     p.save()
     p.translate(0, math.sin(elapsed * 1.65) * 1.8)
-    # Lab-coat-shaped test body.
     p.setBrush(QColor("#d9e6ef"))
     body = QPainterPath(QPointF(94, 203))
     body.cubicTo(52, 221, 69, 290, 58, 300)
@@ -30,7 +29,7 @@ def draw_character(p: QPainter, s: CharacterState, elapsed: float) -> None:
     p.setPen(Qt.PenStyle.NoPen)
     p.setBrush(QColor("#83c8c5"))
     p.drawRoundedRect(QRectF(173, 252, 20, 8), 3, 3)
-    # A simple round mascot face, intentionally not a finished Kurisu drawing.
+
     p.translate(s.head_x * 10 + (-7 if s.behavior == "evade" else 0), s.head_y * 7)
     p.setBrush(QColor("#75534f"))
     p.drawRoundedRect(QRectF(60, 57, 160, 179), 68, 68)
@@ -45,8 +44,12 @@ def draw_character(p: QPainter, s: CharacterState, elapsed: float) -> None:
     fringe.lineTo(112, 105)
     fringe.closeSubpath()
     p.drawPath(fringe)
-    annoyed = s.behavior in ("annoyed", "evade")
-    openness = max(0.08, s.eye_open * (0.65 if annoyed else 1))
+
+    annoyed = s.expression in {"mild_annoyed", "annoyed"} or s.behavior in {"annoyed", "evade"}
+    focused = s.expression in {"focused", "skeptical", "concerned"}
+    surprised = s.expression == "surprised"
+    openness_scale = 1.18 if surprised else (0.72 if annoyed or focused else 1.0)
+    openness = max(0.08, min(1.2, s.eye_open * openness_scale))
     for cx in (111, 169):
         p.setPen(Qt.PenStyle.NoPen)
         p.setBrush(QColor("#ffffff"))
@@ -57,11 +60,22 @@ def draw_character(p: QPainter, s: CharacterState, elapsed: float) -> None:
             p.setBrush(QColor("#24374a"))
             p.drawEllipse(QRectF(cx - 3 + s.eye_x * 6, 149 + s.eye_y * 2, 6, 8 * openness))
         p.setPen(QPen(QColor("#59464a"), 2.8, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
-        slope = (4 if cx < 140 else -4) if annoyed else 0
+        if annoyed:
+            slope = 4 if cx < 140 else -4
+        elif focused:
+            slope = 2 if cx < 140 else -2
+        else:
+            slope = 0
         p.drawLine(QPointF(cx - 13, 133 - slope), QPointF(cx + 13, 133 + slope))
         if openness <= 0.25:
             p.drawLine(QPointF(cx - 12, 153), QPointF(cx + 12, 153))
+
     mouth = QPainterPath(QPointF(131, 187))
-    mouth.quadTo(140, 182 if annoyed else 191, 149, 187)
+    if s.behavior == "speaking":
+        mouth.quadTo(140, 198, 149, 187)
+    elif annoyed or s.expression == "skeptical":
+        mouth.quadTo(140, 181, 149, 187)
+    else:
+        mouth.quadTo(140, 191, 149, 187)
     p.drawPath(mouth)
     p.restore()
