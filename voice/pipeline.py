@@ -64,7 +64,6 @@ class VoicePipeline(QObject):
             self.status_changed.emit("idle")
         except Exception as exc:
             self.error.emit(str(exc))
-            self.status_changed.emit("idle")
         finally:
             try:
                 wav_path.unlink(missing_ok=True)
