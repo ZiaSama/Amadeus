@@ -28,7 +28,13 @@ class LocalLLM:
         messages = [{"role": "system", "content": build_system_prompt(irritation, behavior)}]
         messages.extend(self.history.messages())
         messages.append({"role": "user", "content": text})
-        payload = json.dumps({"model": self.model, "messages": messages, "stream": False}).encode("utf-8")
+        payload = json.dumps({
+            "model": self.model,
+            "messages": messages,
+            "stream": False,
+            "format": "json",
+            "options": {"temperature": 0.65},
+        }).encode("utf-8")
         req = request.Request(self.endpoint, data=payload, headers={"Content-Type": "application/json"})
         try:
             with request.urlopen(req, timeout=self.timeout_sec) as response:
@@ -44,8 +50,15 @@ class LocalLLM:
 
     @staticmethod
     def _parse_reply(raw: str) -> CharacterReply:
+        candidate = raw.strip()
+        if candidate.startswith("```") and candidate.endswith("```"):
+            lines = candidate.splitlines()
+            if len(lines) >= 3:
+                candidate = "\n".join(lines[1:-1]).strip()
+                if candidate.lower().startswith("json\n"):
+                    candidate = candidate[5:].strip()
         try:
-            data = json.loads(raw)
+            data = json.loads(candidate)
             text = str(data.get("text", "")).strip()
             emotion = str(data.get("emotion", "neutral")).strip()
             if not text:
@@ -54,6 +67,5 @@ class LocalLLM:
                 emotion = "neutral"
             return CharacterReply(text=text, emotion=emotion)
         except (json.JSONDecodeError, TypeError, ValueError):
-            # Small local models occasionally ignore JSON-only instructions.
             cleaned = raw.strip() or "……嗯？"
             return CharacterReply(text=cleaned, emotion="neutral")
