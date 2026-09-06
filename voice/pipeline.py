@@ -49,11 +49,14 @@ class VoicePipeline(QObject):
             self.error.emit(str(exc))
             return
         self.recording = False
-        self.status_changed.emit("transcribing")
         self.executor.submit(self._process, wav_path, irritation, behavior)
 
     def _process(self, wav_path: Path, irritation: float, behavior: str) -> None:
         try:
+            if not self.stt.is_loaded:
+                self.status_changed.emit("loading_stt")
+                self.stt.load()
+            self.status_changed.emit("transcribing")
             text = self.stt.transcribe(wav_path)
             self.transcript_ready.emit(text)
             self.status_changed.emit("thinking")
@@ -64,6 +67,7 @@ class VoicePipeline(QObject):
             self.status_changed.emit("idle")
         except Exception as exc:
             self.error.emit(str(exc))
+            self.status_changed.emit("idle")
         finally:
             try:
                 wav_path.unlink(missing_ok=True)
