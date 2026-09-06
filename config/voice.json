@@ -1,0 +1,23 @@
+{
+  "enabled": true,
+  "audio": {
+    "sample_rate": 16000
+  },
+  "stt": {
+    "model": "small",
+    "device": "cuda",
+    "compute_type": "int8_float16",
+    "language": "zh"
+  },
+  "llm": {
+    "endpoint": "http://127.0.0.1:11434/api/chat",
+    "model": "qwen2.5:1.5b",
+    "timeout_sec": 30,
+    "history_turns": 8
+  },
+  "tts": {
+    "rate": 185,
+    "volume": 1.0,
+    "voice_contains": ""
+  }
+}
