@@ -42,7 +42,7 @@ class PetWindow(QWidget):
         self.bus = EventBus()
         for kind in (
             "PET_CLICK", "PET_DRAG_START", "PET_DRAG_END",
-            "VOICE_LISTENING", "VOICE_TRANSCRIBING", "VOICE_THINKING",
+            "VOICE_LISTENING", "VOICE_LOADING_STT", "VOICE_TRANSCRIBING", "VOICE_THINKING",
             "VOICE_REPLY", "VOICE_IDLE", "VOICE_ERROR",
         ):
             self.bus.subscribe(kind, self.controller.handle)
@@ -52,7 +52,7 @@ class PetWindow(QWidget):
 
         self.debug = QLabel(None, Qt.WindowType.Tool | Qt.WindowType.WindowStaysOnTopHint)
         self.debug.setWindowTitle("Amadeus · 调试")
-        self.debug.setMinimumSize(380, 260)
+        self.debug.setMinimumSize(410, 270)
         self.debug.setStyleSheet("background:#162231;color:#dfeaf2;padding:18px;font:13px 'Microsoft YaHei';")
         self.debug.setTextFormat(Qt.TextFormat.PlainText)
         if debug:
@@ -100,7 +100,7 @@ class PetWindow(QWidget):
                 f"最近事件说明：{s.reason}\n"
                 f"识别文本：{self.last_transcript or '-'}\n"
                 f"角色回复：{s.speech_text or '-'}\n\n"
-                "按住鼠标中键说话；STT/LLM/TTS 在后台线程运行。"
+                "按住鼠标中键说话；首次使用会先下载/加载本地 STT 模型。"
             )
         self.update()
 
@@ -129,6 +129,7 @@ class PetWindow(QWidget):
     def on_voice_status(self, status: str):
         mapping = {
             "listening": "VOICE_LISTENING",
+            "loading_stt": "VOICE_LOADING_STT",
             "transcribing": "VOICE_TRANSCRIBING",
             "thinking": "VOICE_THINKING",
             "idle": "VOICE_IDLE",
